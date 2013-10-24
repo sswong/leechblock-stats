@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>site blocked</title>
+	
+	<style>
+		[class*="col-"] {
+			padding-top: 15px;
+			padding-bottom: 15px;
+			background-color: #eee;
+			border: 1px solid #ddd;
+			background-color: rgba(86,61,124,.15);
+			border: 1px solid rgba(86,61,124,.2);
+		}
+		body { font-family: tahoma; font-size: 12px; }
+		.container { margin: auto; width: 1170px; } 
+		span.url { font-style: italic; font-size: 16px; color: blue;} 
+		code { font-family: Consolas; padding:0; font-size: 12px; }
+		div#visitMsg { border: rgb(199, 37, 78) solid 1px; }
+		span#timeTaken { font-size: 8px; } 
+	</style>
+	
+	<!-- Bootstrap core CSS 
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+	-->
+	
+</head>
+<body>
+	<div class="container">
+      <div class="page-header">
+        <h1>Site Blocked</h1>
+      </div>
+	  
+      <p class="lead" id="site">Site <span class="url">__site__</span> is blocked by leechblock</p>
+      <div class="row">
+        <div class="col-md-12">Please continue to focus on your work.</div>
+		<br />
+		<div id="visitMsg" class="col-md-12">Please continue to focus on your work.</div>
+      </div>
+	  <span id="timeTaken">&nbsp;</span>
+	</div>
+	<script type="text/javascript">
+		(function(){
+			var initTime = (new Date()).getTime();
+			// get today date
+			var today = new Date();
+			var dd = today.getDate();
+			var mm = today.getMonth()+1;
+			var yyyy = today.getFullYear();
+			if(dd<10){dd='0'+dd} 
+			if(mm<10){mm='0'+mm} 
+			today = yyyy +''+ mm +''+ dd;
+			
+			var skip = window.location.search.split('=')[1];
+			
+			// skip logging
+			if (skip != 'skip') {
+				
+				// get count from localstorage
+				var visitCnt = 0;
+				if (localStorage.getItem(today)) {
+					visitCnt = localStorage.getItem(today);
+				}
+				visitCnt++;
+				localStorage.setItem(today, visitCnt);
+				
+				// url
+				var url = window.location.search.split('=')[1];
+				var text = document.getElementById('site').innerHTML;
+				text = text.replace('__site__', url);
+				document.getElementById('site').innerHTML = text;
+				
+				// domain
+				var link = document.createElement('a');
+				link.setAttribute('href', url);
+				var domain = link.hostname;
+				if (domain == '') {
+					domain = url.split('?')[0];
+					domain = url.split('/')[0];
+				}
+				
+				var domainVisitCnt = 0;
+				if (localStorage.getItem(today+'-'+domain)) {
+					domainVisitCnt = localStorage.getItem(today+'-'+domain);
+				}
+				domainVisitCnt++;
+				localStorage.setItem(today+'-'+domain, domainVisitCnt);
+			}
+			
+			
+			// sort
+			var key = [];
+			for (var i=0; i< localStorage.length; i++) {
+				key[i] = localStorage.key(i);
+			}
+			function swap(i, key, a, b){
+				var tmp = key[a];
+					key[a] = key[b];
+					key[b] = tmp;
+			}
+			for (var i=0; i<key.length; i++) {
+				for (var j=i; j<key.length; j++) {
+					var trimI = key[i].split('-')[0];
+					var trimJ = key[j].split('-')[0];
+					if (key[j] > key[i]){
+						swap(1, key, i, j);
+					} 
+					if (trimJ == trimI && key[j].length == 8 && key[i].length > 8) {
+						swap(2, key, i, j);
+					} 
+				}
+			}
+			
+			// display sorted data
+			var list = '';
+			for (var i=0; i<key.length ; i++) {
+				spaces = (key[i].length > 8)? '&nbsp;├── ': '';
+				list += spaces + key[i] +': ' + localStorage.getItem(key[i]) + '<br />';
+			}
+			document.getElementById('visitMsg').innerHTML = 'Visit history: <br /><code>' + list + '</code>';
+			
+			// timetaken
+			var endTime = (new Date()).getTime();
+			var timeTaken = endTime - initTime;
+			document.getElementById('timeTaken').innerHTML = 'time taken: ' + timeTaken + ' ms';
+		})();
+	</script>
+</body>
+</html>
